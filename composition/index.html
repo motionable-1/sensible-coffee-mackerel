@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hyperframes Composition</title>
+  <title>BrowserTest</title>
   <style>
     :root {
       color-scheme: dark;
-      font-family: Inter, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background: transparent;
-      color: #f6f1e8;
+      color: #ffffff;
       font-kerning: normal;
       text-rendering: geometricPrecision;
       -webkit-font-smoothing: antialiased;
@@ -26,7 +26,7 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
-      background: #0b0b0d;
+      background: #080a10;
     }
 
     #stage {
@@ -34,125 +34,437 @@
       width: 1920px;
       height: 1080px;
       overflow: hidden;
-      background:
-        linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent 38%),
-        radial-gradient(ellipse at 50% 52%, rgb(255 255 255 / 0.07), transparent 48%),
-        #0b0b0d;
+      background: #080a10;
     }
 
-    .r3f-layer {
-      position: absolute;
-      inset: -7% -10% -7% 12%;
-      z-index: 0;
-      pointer-events: none;
-      opacity: 0.98;
-    }
-
-    .r3f-layer canvas {
-      display: block;
-      width: 100% !important;
-      height: 100% !important;
-    }
-
-    .preview-pending-scene {
+    /* Cohesive Global Background Layer */
+    .bg-universe {
       position: absolute;
       inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      padding-left: 232px;
+      background: radial-gradient(circle at 50% 50%, #0d1222 0%, #06080e 100%);
       overflow: hidden;
-      transform: translate3d(0, 0, 0);
-      backface-visibility: hidden;
+      z-index: 1;
     }
 
-    .preview-pending-scene::before {
+    /* Ambient soft glowing circles in corners */
+    .ambient-glow-tl {
+      position: absolute;
+      top: -300px;
+      left: -300px;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(29, 78, 216, 0.22) 0%, transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    .ambient-glow-br {
+      position: absolute;
+      bottom: -300px;
+      right: -300px;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(13, 148, 136, 0.18) 0%, transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    .ambient-glow-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1000px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+      filter: blur(100px);
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    /* Global layout container for scenes */
+    .scene-container {
       position: absolute;
       inset: 0;
-      pointer-events: none;
-      content: "";
-      background:
-        linear-gradient(90deg, rgb(11 11 13 / 0.88) 0%, rgb(11 11 13 / 0.72) 28%, transparent 62%),
-        linear-gradient(90deg, rgb(255 255 255 / 0.03), transparent 34%),
-        linear-gradient(180deg, transparent 58%, rgb(0 0 0 / 0.34));
+      z-index: 5;
     }
 
-    .preview-pending-grid {
+    /* SCENE 1: Title Card */
+    .scene-title {
       position: absolute;
       inset: 0;
-      pointer-events: none;
-      opacity: 0.28;
-      background-image:
-        linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px),
-        linear-gradient(180deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
-      background-size: 72px 72px;
-      mask-image: radial-gradient(ellipse at center, black 0%, transparent 72%);
-    }
-
-    .preview-pending-content {
-      position: relative;
-      z-index: 2;
-      width: 560px;
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      text-shadow: 0 20px 54px rgb(0 0 0 / 0.56);
-      will-change: transform, opacity;
+      align-items: center;
+      justify-content: center;
     }
 
-    .preview-pending-status {
-      display: inline-flex;
+    .brand-title {
+      font-size: 110px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      display: flex;
       align-items: center;
       gap: 10px;
-      color: rgb(246 241 232 / 0.64);
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      line-height: 1;
-      text-transform: uppercase;
     }
 
-    .preview-pending-dot {
+    .brand-browser {
+      color: #ffffff;
+      text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+    }
+
+    .brand-test {
+      background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 30px rgba(56, 189, 248, 0.3));
+    }
+
+    .title-flare {
+      position: absolute;
+      width: 480px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #38bdf8, #3b82f6, transparent);
+      margin-top: 150px;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.8);
+    }
+
+    /* SCENE 2: Dashboard */
+    .scene-dashboard {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      background: #080a10;
+    }
+
+    /* Left Sidebar */
+    .sidebar {
+      width: 80px;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      background: #0c0e16;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 0;
+      gap: 32px;
+    }
+
+    .sidebar-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .sidebar-icon {
+      width: 20px;
+      height: 20px;
+      opacity: 0.4;
+    }
+
+    .sidebar-icon.active {
+      opacity: 0.9;
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.8));
+    }
+
+    /* Dashboard Main Area */
+    .dashboard-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 50px 60px;
+      gap: 36px;
+    }
+
+    /* Dashboard Header */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dashboard-title-text {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .dashboard-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .badge-live-dot {
       width: 8px;
       height: 8px;
-      border-radius: 999px;
-      background: #d6a15c;
-      box-shadow: 0 0 24px rgb(214 161 92 / 0.7);
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
     }
 
-    .preview-pending-title {
-      max-width: 560px;
-      margin-top: 20px;
-      font-size: 54px;
-      font-weight: 760;
-      letter-spacing: 0;
-      line-height: 0.98;
-    }
-
-    .preview-pending-subtitle {
-      max-width: 430px;
-      margin-top: 14px;
-      color: rgb(246 241 232 / 0.58);
-      font-size: 20px;
+    .control-dropdown {
+      background: #11151e;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.7);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 14px;
       font-weight: 500;
-      letter-spacing: 0;
-      line-height: 1.35;
     }
 
-    .preview-pending-progress {
-      width: 360px;
-      height: 2px;
-      margin-top: 32px;
+    /* Hero Panel Card */
+    .hero-card {
+      background: #11151e;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
       overflow: hidden;
-      background: rgb(246 241 232 / 0.12);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
 
-    .preview-pending-progress span {
-      display: block;
-      width: 100%;
-      height: 100%;
-      transform-origin: left center;
-      background: linear-gradient(90deg, #9c7441, #f1d4a8);
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 10%;
+      transform: translate(50%, -50%);
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+    }
+
+    .hero-card-left {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .hero-card-tag {
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .hero-card-passed {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .hero-card-score {
+      font-size: 100px;
+      font-weight: 800;
+      color: #10b981;
+      line-height: 1;
+      margin: 8px 0;
+      text-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+    }
+
+    .hero-card-desc {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .hero-card-right {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-circle-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.04);
+      stroke-width: 12;
+    }
+
+    .progress-ring-circle {
+      fill: none;
+      stroke: #10b981;
+      stroke-width: 12;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+    }
+
+    .checkmark-container {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .checkmark-svg {
+      width: 50px;
+      height: 50px;
+      fill: none;
+      stroke: #10b981;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.5));
+    }
+
+    /* Bottom Row Cards */
+    .dashboard-bottom-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .bottom-card {
+      background: #11151e;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 160px;
+    }
+
+    .bottom-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .bottom-card-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 8px;
+    }
+
+    .bottom-card-chart {
+      height: 36px;
+      margin-top: 12px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    /* SCENE 3: CTA Card */
+    .scene-cta {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #080a10;
+    }
+
+    .cta-logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(56, 189, 248, 0.4);
+      margin-bottom: 24px;
+    }
+
+    .cta-logo-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .cta-title {
+      font-size: 72px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    .cta-subtitle {
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 40px;
+      font-weight: 500;
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      border-radius: 50px;
+      padding: 16px 36px;
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 15px 30px rgba(59, 130, 246, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .cta-button-arrow {
+      width: 28px;
+      height: 28px;
+      background: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #3b82f6;
+    }
+
+    .cta-button-arrow svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Utility Reveal Wrappers */
+    .reveal-mask {
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: bottom;
+    }
+
+    .reveal-item {
+      display: inline-block;
     }
   </style>
 </head>
@@ -161,34 +473,203 @@
     id="stage"
     data-composition-id="Main"
     data-start="0"
-    data-duration="11.667"
+    data-duration="5.0"
     data-width="1920"
     data-height="1080"
     data-motionabl-fps="30"
-    data-motionabl-scenes='[{"label":"Preview","from":0,"durationInFrames":350}]'
+    data-motionabl-scenes='[
+      {"label":"Title Card","from":0,"durationInFrames":45},
+      {"label":"Dashboard","from":45,"durationInFrames":65},
+      {"label":"CTA Card","from":110,"durationInFrames":40}
+    ]'
   >
+    <!-- React Three Fiber Layer Mount Point (Placed at absolute lowest z-index) -->
+    <div id="r3f-root" style="position: absolute; inset: 0; z-index: 0; pointer-events: none;"></div>
+
+    <!-- GLOBAL COHESIVE BACKGROUND -->
+    <div class="bg-universe" style="z-index: 1;">
+      <div class="ambient-glow-tl"></div>
+      <div class="ambient-glow-center"></div>
+      <div class="ambient-glow-br"></div>
+    </div>
+
+    <!-- SCENE 1: Title Card -->
     <div
-      id="preview-pending"
-      class="clip preview-pending-scene"
+      id="scene-1"
+      class="clip scene-container scene-title"
       data-start="0"
-      data-duration="11.667"
-      data-track-index="0"
+      data-duration="1.5"
+      data-track-index="1"
     >
-      <div id="r3f-root" class="r3f-layer" aria-hidden="true"></div>
-      <div class="preview-pending-grid" aria-hidden="true"></div>
-      <div class="preview-pending-content">
-        <div class="preview-pending-status">
-          <span class="preview-pending-dot"></span>
-          <span>R3F ready</span>
+      <div class="brand-title">
+        <span class="reveal-mask"><span class="brand-browser reveal-item">Browser</span></span><span class="reveal-mask"><span class="brand-test reveal-item">Test</span></span>
+      </div>
+      <div class="title-flare"></div>
+    </div>
+
+    <!-- SCENE 2: Dashboard UI -->
+    <div
+      id="scene-2"
+      class="clip scene-container scene-dashboard"
+      data-start="1.5"
+      data-duration="2.167"
+      data-track-index="2"
+    >
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" class="sidebar-icon active">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
         </div>
-        <div class="preview-pending-title">React Three Fiber scene</div>
-        <div class="preview-pending-subtitle">
-          This starter renders a deterministic 3D layer driven by the Hyperframes seek timeline.
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" class="sidebar-icon active" style="margin-top: 20px;">
+          <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" class="sidebar-icon">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" class="sidebar-icon">
+          <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+          <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" class="sidebar-icon">
+          <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" class="sidebar-icon" style="margin-top: auto;">
+          <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>
+
+      <!-- Dashboard Main Content -->
+      <div class="dashboard-main">
+        <!-- Header -->
+        <div class="dashboard-header">
+          <div class="dashboard-title-text reveal-mask">
+            <span class="dashboard-title-item reveal-item">Dashboard</span>
+          </div>
+          <div class="dashboard-controls">
+            <div class="control-dropdown">Last run</div>
+            <div class="badge-live">
+              <span class="badge-live-dot"></span>
+              <span>Live</span>
+            </div>
+          </div>
         </div>
-        <div class="preview-pending-progress" aria-hidden="true">
-          <span></span>
+
+        <!-- Hero Card Panel -->
+        <div class="hero-card">
+          <div class="hero-card-left">
+            <span class="hero-card-tag">Automated Test Summary</span>
+            <span class="hero-card-passed">All tests passed</span>
+            <span class="hero-card-score">100%</span>
+            <span class="hero-card-desc">Excellent! No issues detected.</span>
+          </div>
+          <div class="hero-card-right">
+            <svg class="progress-ring" width="160" height="160">
+              <circle class="progress-ring-circle-bg" cx="80" cy="80" r="70" />
+              <circle class="progress-ring-circle" cx="80" cy="80" r="70" stroke-dasharray="439.82" stroke-dashoffset="439.82" />
+            </svg>
+            <div class="checkmark-container">
+              <svg class="checkmark-svg" viewBox="0 0 24 24">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Cards -->
+        <div class="dashboard-bottom-row">
+          <!-- Card 1 -->
+          <div class="bottom-card">
+            <div class="bottom-card-header">
+              <span>Tests run</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+            </div>
+            <div>
+              <div class="bottom-card-value">312</div>
+              <div class="bottom-card-chart">
+                <svg width="100%" height="100%" viewBox="0 0 100 24" preserveAspectRatio="none">
+                  <rect x="0" y="14" width="10" height="10" fill="#10b981" rx="2" />
+                  <rect x="15" y="8" width="10" height="16" fill="#10b981" rx="2" />
+                  <rect x="30" y="11" width="10" height="13" fill="#10b981" rx="2" />
+                  <rect x="45" y="4" width="10" height="20" fill="#10b981" rx="2" />
+                  <rect x="60" y="9" width="10" height="15" fill="#10b981" rx="2" />
+                  <rect x="75" y="2" width="10" height="22" fill="#10b981" rx="2" />
+                  <rect x="90" y="0" width="10" height="24" fill="#10b981" rx="2" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div class="bottom-card">
+            <div class="bottom-card-header">
+              <span>Duration</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div>
+              <div class="bottom-card-value">4m 32s</div>
+              <div class="bottom-card-chart">
+                <svg width="100%" height="100%" viewBox="0 0 120 24" fill="none">
+                  <path d="M0 18 C 15 12, 20 22, 35 14 C 50 6, 60 16, 75 8 C 90 0, 105 15, 120 4" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Card 3 -->
+          <div class="bottom-card">
+            <div class="bottom-card-header">
+              <span>Browsers</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="bottom-card-value">24</div>
+              <div style="font-size: 14px; color: rgba(255,255,255,0.4); margin-top: 16px; display: flex; align-items: center; gap: 6px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" style="width: 14px; height: 14px;">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                <span>Latest stable engines</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- SCENE 3: CTA Card -->
+    <div
+      id="scene-3"
+      class="clip scene-container scene-cta"
+      data-start="3.667"
+      data-duration="1.333"
+      data-track-index="3"
+    >
+      <div class="cta-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" class="cta-logo-icon">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+        </svg>
+      </div>
+      <div class="cta-title">Try BrowserTest</div>
+      <div class="cta-subtitle">Automated testing. Confident releases.</div>
+      <a href="#" class="cta-button">
+        <span>Get Started</span>
+        <div class="cta-button-arrow">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </a>
     </div>
   </div>
 
@@ -199,8 +680,8 @@
     window.__hfThreeTime = 0;
 
     const timeline = gsap.timeline({ paused: true });
-    const durationAnchor = { value: 0 };
 
+    // Sync React Three Fiber time loop with GSAP seek timeline
     const syncR3FTime = () => {
       const time = timeline.time();
       window.__hfThreeTime = time;
@@ -210,51 +691,249 @@
     timeline.eventCallback("onUpdate", syncR3FTime);
     timeline.eventCallback("onStart", syncR3FTime);
     timeline.eventCallback("onComplete", syncR3FTime);
+
+    // Dummy anchor to force timeline evaluation across total 5 seconds
+    const durationAnchor = { value: 0 };
     timeline.to(durationAnchor, {
       value: 1,
-      duration: 11.667,
-      ease: "power1.inOut",
+      duration: 5.0,
+      ease: "none"
     }, 0);
-    timeline.from(".preview-pending-content", {
-      opacity: 0,
-      y: 34,
-      scale: 0.98,
+    
+    // SCENE 1 ANIMATIONS (0s - 1.5s)
+    // Reveal brand text
+    timeline.fromTo(".brand-browser", {
+      yPercent: 100,
+      opacity: 0
+    }, {
+      yPercent: 0,
+      opacity: 1,
+      duration: 0.6,
+      ease: "power3.out"
+    }, 0.2);
+
+    timeline.fromTo(".brand-test", {
+      yPercent: 100,
+      opacity: 0
+    }, {
+      yPercent: 0,
+      opacity: 1,
+      duration: 0.6,
+      ease: "power3.out"
+    }, 0.3);
+
+    // Light flare draw-in and glow pop
+    timeline.fromTo(".title-flare", {
+      scaleX: 0,
+      opacity: 0
+    }, {
+      scaleX: 1,
+      opacity: 1,
       duration: 0.8,
-      ease: "power4.out",
-    }, 0);
-    timeline.from(".preview-pending-grid", {
+      ease: "expo.out"
+    }, 0.4);
+
+    // Scene 1 Outro (1.4s)
+    timeline.to("#scene-1", {
       opacity: 0,
-      scale: 1.08,
-      duration: 1.1,
-      ease: "power3.out",
-    }, 0);
-    timeline.from(".r3f-layer", {
+      y: -50,
+      duration: 0.3,
+      ease: "power2.in"
+    }, 1.35);
+
+
+    // SCENE 2 ANIMATIONS (1.5s - 3.667s)
+    // Scene Entrance
+    timeline.fromTo("#scene-2", {
+      opacity: 0,
+      y: 50,
+      scale: 0.95
+    }, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.5,
+      ease: "power3.out"
+    }, 1.5);
+
+    // Sidebar Slide in
+    timeline.fromTo(".sidebar", {
+      xPercent: -100
+    }, {
+      xPercent: 0,
+      duration: 0.6,
+      ease: "power3.out"
+    }, 1.6);
+
+    // Dashboard title reveal
+    timeline.fromTo(".dashboard-title-item", {
+      yPercent: 100
+    }, {
+      yPercent: 0,
+      duration: 0.5,
+      ease: "power3.out"
+    }, 1.7);
+
+    // Controls pop
+    timeline.fromTo(".dashboard-controls > *", {
+      opacity: 0,
+      scale: 0.8
+    }, {
+      opacity: 1,
+      scale: 1,
+      duration: 0.4,
+      stagger: 0.1,
+      ease: "back.out(1.7)"
+    }, 1.8);
+
+    // Hero card reveal
+    timeline.fromTo(".hero-card", {
+      opacity: 0,
+      y: 30
+    }, {
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      ease: "power3.out"
+    }, 1.9);
+
+    // Circle Draw and 100% Score count
+    timeline.fromTo(".progress-ring-circle", {
+      strokeDashoffset: 439.82
+    }, {
+      strokeDashoffset: 0,
+      duration: 1.2,
+      ease: "power2.out"
+    }, 2.0);
+
+    // Checkmark pop
+    timeline.fromTo(".checkmark-svg path", {
+      strokeDasharray: 50,
+      strokeDashoffset: 50
+    }, {
+      strokeDashoffset: 0,
+      duration: 0.4,
+      ease: "power1.out"
+    }, 2.9);
+
+    // Score text pop
+    timeline.fromTo(".hero-card-score", {
+      scale: 0.5,
+      opacity: 0
+    }, {
+      scale: 1,
+      opacity: 1,
+      duration: 0.5,
+      ease: "elastic.out(1, 0.5)"
+    }, 2.4);
+
+    // Bottom cards stagger
+    timeline.fromTo(".bottom-card", {
+      opacity: 0,
+      y: 20
+    }, {
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      stagger: 0.1,
+      ease: "power3.out"
+    }, 2.2);
+
+    // Chart draw animations
+    timeline.fromTo(".bottom-card-chart rect", {
+      scaleY: 0,
+      transformOrigin: "bottom"
+    }, {
+      scaleY: 1,
+      duration: 0.6,
+      stagger: 0.05,
+      ease: "back.out(1.5)"
+    }, 2.4);
+
+    timeline.fromTo(".bottom-card-chart path", {
+      strokeDasharray: 200,
+      strokeDashoffset: 200
+    }, {
+      strokeDashoffset: 0,
+      duration: 0.8,
+      ease: "power2.out"
+    }, 2.5);
+
+    // Scene 2 Outro
+    timeline.to("#scene-2", {
       opacity: 0,
       scale: 1.05,
-      duration: 1.6,
-      ease: "power3.out",
-    }, 0);
-    timeline.to(".preview-pending-dot", {
-      opacity: 0.35,
-      duration: 0.9,
-      yoyo: true,
-      repeat: 10,
-      ease: "sine.inOut",
-    }, 0.25);
-    timeline.fromTo(".preview-pending-progress span", {
-      scaleX: 0.08,
+      duration: 0.3,
+      ease: "power2.in"
+    }, 3.5);
+
+
+    // SCENE 3 ANIMATIONS (3.667s - 5.0s)
+    timeline.fromTo("#scene-3", {
+      opacity: 0,
+      scale: 0.95,
+      y: 30
     }, {
-      scaleX: 0.82,
-      duration: 5.8,
-      yoyo: true,
-      repeat: 1,
-      ease: "power2.inOut",
-    }, 0.4);
-    timeline.to(".preview-pending-grid", {
-      opacity: 0.28,
-      duration: 0.001,
-      ease: "power1.out",
-    }, 11.667);
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      duration: 0.5,
+      ease: "power3.out"
+    }, 3.667);
+
+    // Logo Pop
+    timeline.fromTo(".cta-logo", {
+      scale: 0,
+      opacity: 0,
+      rotation: -45
+    }, {
+      scale: 1,
+      opacity: 1,
+      rotation: 0,
+      duration: 0.6,
+      ease: "back.out(1.7)"
+    }, 3.8);
+
+    // CTA text and subtext reveal
+    timeline.fromTo(".cta-title", {
+      opacity: 0,
+      y: 20
+    }, {
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      ease: "power3.out"
+    }, 3.9);
+
+    timeline.fromTo(".cta-subtitle", {
+      opacity: 0,
+      y: 15
+    }, {
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      ease: "power3.out"
+    }, 4.0);
+
+    // CTA Button Entrance
+    timeline.fromTo(".cta-button", {
+      opacity: 0,
+      y: 30
+    }, {
+      opacity: 1,
+      y: 0,
+      duration: 0.6,
+      ease: "back.out(1.5)"
+    }, 4.15);
+
+    timeline.fromTo(".cta-button-arrow", {
+      scale: 0
+    }, {
+      scale: 1,
+      duration: 0.4,
+      ease: "back.out(1.8)"
+    }, 4.45);
+
 
     window.__timelines.Main = timeline;
     syncR3FTime();
